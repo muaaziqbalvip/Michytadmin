@@ -1,0 +1,66 @@
+// firestore.rules
+// MICH YT PROJECT - Owner-only Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if user is the owner (your UID goes here after first login)
+    function isOwner() {
+      return request.auth != null && request.auth.uid == get(/databases/$(database)/documents/settings/owner).data.uid;
+    }
+
+    // Fallback: any authenticated user (use until owner UID is set)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Owner settings document
+    match /settings/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Users profiles
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // All private data - owner only
+    match /notes/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /tasks/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /youtube_accounts/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /gmail_cache/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /uploads/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /activity_logs/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /profiles/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /bookmarks/{doc} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
